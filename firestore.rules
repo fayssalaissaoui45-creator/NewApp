@@ -1,0 +1,168 @@
+rules_version = '2';
+
+// ============================================================
+// Contract Social Manager — Firestore Security Rules
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isManager() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/managerRestaurants/$(request.auth.uid));
+    }
+
+    function managerRestaurantId() {
+      return isManager()
+        ? get(/databases/$(database)/documents/managerRestaurants/$(request.auth.uid)).data.id
+        : '';
+    }
+
+    function isManagerOf(restaurantId) {
+      return isManager() && managerRestaurantId() == restaurantId;
+    }
+
+    function restaurantExists(restaurantId) {
+      return exists(/databases/$(database)/documents/restaurants/$(restaurantId));
+    }
+
+    // ---------- managerRestaurants/{uid} ----------
+    match /managerRestaurants/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---------- users/{uid} ----------
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---------- restaurants/{restaurantId} ----------
+    match /restaurants/{restaurantId} {
+
+      allow read: if restaurantExists(restaurantId);
+      allow write: if isManagerOf(restaurantId);
+
+      // ----- meta -----
+      match /meta/{docId} {
+        allow read: if restaurantExists(restaurantId);
+        allow write: if isManagerOf(restaurantId);
+      }
+
+      // ----- staff/{badge} -----
+      // Manager-only for create/delete. Employees can update ONLY their
+      // own photo fields (verified by field diff). This prevents an
+      // anonymous user from creating ghost employees or renaming someone.
+      match /staff/{badge} {
+        allow read: if restaurantExists(restaurantId);
+
+        // Only the manager creates new employees (via staff.html or
+        // daily-import auto-create).
+        allow create: if isManagerOf(restaurantId);
+
+        // Employees can ONLY add/change their photo and photoUpdatedAt.
+        // Cannot touch name, badge, active, createdAt.
+        allow update: if restaurantExists(restaurantId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['photo', 'photoUpdatedAt', 'updatedAt']);
+
+        // Manager can update anything and delete.
+        allow write: if isManagerOf(restaurantId);
+      }
+
+      // ----- shifts/{shiftId} -----
+      match /shifts/{shiftId} {
+        allow read: if restaurantExists(restaurantId);
+
+        // Create: badge + date must be present and well-formed.
+        allow create: if restaurantExists(restaurantId)
+          && request.resource.data.badge is string
+          && request.resource.data.badge.size() > 0
+          && request.resource.data.badge.size() < 20
+          && request.resource.data.date is string
+          && request.resource.data.date.size() == 10;
+
+        // Update: badge and date are immutable.
+        allow update: if restaurantExists(restaurantId)
+          && request.resource.data.badge == resource.data.badge
+          && request.resource.data.date == resource.data.date;
+
+        allow delete: if isManagerOf(restaurantId);
+      }
+
+      // ----- schedules/{scheduleId} -----
+      match /schedules/{scheduleId} {
+        allow read: if restaurantExists(restaurantId);
+        allow write: if isManagerOf(restaurantId);
+      }
+
+      // ----- leaveRequests/{requestId} -----
+      match /leaveRequests/{requestId} {
+        allow read: if restaurantExists(restaurantId);
+
+        allow create: if restaurantExists(restaurantId)
+          && request.resource.data.badge is string
+          && request.resource.data.status == 'pending'
+          && request.resource.data.type in ['vacation','sick','personal','other']
+          && request.resource.data.fromDate is string
+          && request.resource.data.fromDate.size() == 10
+          && request.resource.data.toDate is string
+          && request.resource.data.toDate.size() == 10
+          && request.resource.data.fromDate <= request.resource.data.toDate;
+
+        allow update, delete: if isManagerOf(restaurantId);
+      }
+
+      // ----- corrections/{correctionId} -----
+      match /corrections/{correctionId} {
+        allow read: if restaurantExists(restaurantId);
+
+        allow create: if restaurantExists(restaurantId)
+          && request.resource.data.badge is string
+          && request.resource.data.status == 'pending'
+          && request.resource.data.date is string
+          && request.resource.data.date.size() == 10
+          && request.resource.data.field in ['clockIn','breakStart','breakReturn','clockOut']
+          && request.resource.data.reason is string
+          && request.resource.data.reason.size() > 0
+          && request.resource.data.reason.size() < 500;
+
+        allow update, delete: if isManagerOf(restaurantId);
+      }
+
+      // ----- auditLog/{logId} -----
+      match /auditLog/{logId} {
+        allow read, write: if isManagerOf(restaurantId);
+      }
+
+      // ----- dailyImports/{docId} -----
+      match /dailyImports/{docId} {
+        allow read, write: if isManagerOf(restaurantId);
+      }
+    }
+
+    // ---------- pushSubscriptions/{deviceId} ----------
+    match /pushSubscriptions/{deviceId} {
+      allow read: if isSignedIn() && isManager();
+      allow create, update: if isSignedIn() && isManager();
+      allow delete: if isSignedIn() && isManager();
+    }
+
+    // ---------- pushAlertState/{restaurantId} ----------
+    match /pushAlertState/{restaurantId} {
+      allow read, write: if isSignedIn() && isManagerOf(restaurantId);
+    }
+
+    // ---------- Default deny ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
