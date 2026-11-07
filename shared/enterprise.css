@@ -226,6 +226,68 @@ body:before{
   text-transform:uppercase;
 }
 .surface-meta{color:var(--text-muted);font-size:11px;}
+.surface-meta,.sync-indicator{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.surface-meta:before,.sync-indicator:before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--status-ok-line);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--status-ok-line) 14%,transparent);
+}
+.ui-state{
+  display:grid;
+  place-items:center;
+  min-height:150px;
+  padding:28px 20px;
+  text-align:center;
+  color:var(--text-muted);
+  background:var(--panel);
+  border:1px dashed var(--line);
+  border-radius:var(--radius);
+}
+.ui-state strong{
+  display:block;
+  margin-bottom:5px;
+  color:var(--text);
+  font-size:15px;
+}
+.ui-state .state-icon{
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  margin-bottom:10px;
+  border-radius:11px;
+  background:var(--line-soft);
+  color:var(--accent);
+  font-weight:800;
+}
+.loading-overlay{
+  background:color-mix(in srgb,var(--bg) 78%,#0b1118 22%) !important;
+  backdrop-filter:blur(5px);
+}
+.loading-overlay .spinner{
+  width:42px !important;
+  height:42px !important;
+  border-width:3px !important;
+}
+.loading-overlay .loading-text,.loading-overlay #loadingText{
+  color:var(--text) !important;
+  font-size:13px;
+  font-weight:700;
+}
+.login-error:empty{display:none;}
+.login-error:not(:empty){
+  padding:9px 11px;
+  border:1px solid color-mix(in srgb,var(--status-crit-line) 35%,var(--line));
+  border-radius:8px;
+  background:var(--status-crit-bg);
+}
 .work-surface .tablewrap{border:0;border-radius:0 !important;box-shadow:none !important;}
 
 .btn{
@@ -333,6 +395,9 @@ tbody tr:hover{background:color-mix(in srgb, var(--accent) 5%, var(--panel)) !im
   border-radius:var(--radius) !important;
   box-shadow:var(--shadow) !important;
   border-color:var(--line) !important;
+}
+.empty,.emptystate,.empty-state,.empty-plan{
+  border-style:dashed !important;
 }
 .staffcard{padding:16px !important;}
 .staffcard .actions button,.iconact,.rowaction{

@@ -115,7 +115,7 @@
   </div>
 
   <div class="stafflist" id="staffList"></div>
-  <div class="empty hidden" id="emptyState">
+  <div class="empty ui-state hidden" id="emptyState" role="status" aria-live="polite">
     <b>Aucun employé pour le moment</b>
     Importez la base employés (PDF) ou cliquez sur « Ajouter un employé ».
   </div>
@@ -150,7 +150,7 @@
   </div>
 </div>
 
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
   <div class="spinner"></div>
   <div id="loadingText">Lecture du fichier PDF en cours...</div>
 </div>

@@ -97,7 +97,7 @@ table.preview{width:100%;border-collapse:collapse;min-width:1200px;font-size:13p
     <div class="importlog" id="importLog"></div>
   </div>
 
-  <div class="empty-state" id="emptyState">
+  <div class="empty-state ui-state" id="emptyState" role="status" aria-live="polite">
     <b>Aucun aperçu en cours</b>
     Chargez un fichier Excel ci-dessus pour voir les pointages.
   </div>
@@ -124,7 +124,7 @@ table.preview{width:100%;border-collapse:collapse;min-width:1200px;font-size:13p
     </div>
   </div>
 </div>
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">Lecture du fichier Excel…</div>
 </div>
