@@ -434,7 +434,64 @@ tbody tr:hover{background:color-mix(in srgb, var(--accent) 5%, var(--panel)) !im
   box-shadow:inset 0 0 0 1px var(--accent), 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 .statbox{border-radius:10px !important;}
-
+.workflow-steps{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+.workflow-step{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  padding:10px 11px;
+  color:var(--text-muted);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:9px;
+  font-size:11px;
+  font-weight:800;
+}
+.workflow-step .step-number{
+  display:grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  flex:none;
+  border-radius:50%;
+  background:var(--line-soft);
+  color:var(--text-muted);
+  font-size:10px;
+}
+.workflow-step.active{
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--line));
+  background:color-mix(in srgb,var(--accent) 8%,var(--panel));
+  color:var(--accent);
+}
+.workflow-step.active .step-number{
+  background:var(--accent);
+  color:#fff;
+}
+.coverage-kpis{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 18px;
+}
+.coverage-kpi{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:13px 15px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:var(--shadow-sm);
+}
+.coverage-kpi span{color:var(--text-muted);font-size:11px;font-weight:700;}
+.coverage-kpi strong{color:var(--text);font:700 22px 'IBM Plex Mono',monospace;}
 @media (max-width:760px){
   body:before{height:3px;}
   .app{padding:14px 12px 40px !important;}
@@ -452,6 +509,8 @@ tbody tr:hover{background:color-mix(in srgb, var(--accent) 5%, var(--panel)) !im
   .ops-kpi-icon{width:30px;height:30px;}
   .ops-kpi-value{font-size:23px;}
   .surface-heading{align-items:flex-start;flex-direction:column;}
+  .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .coverage-kpis{grid-template-columns:1fr;}
 }
 
 @media (prefers-reduced-motion:reduce){

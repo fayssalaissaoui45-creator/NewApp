@@ -86,6 +86,13 @@ table.preview{width:100%;border-collapse:collapse;min-width:1200px;font-size:13p
     </div>
   </div>
 
+  <div class="workflow-steps" aria-label="Étapes de synchronisation">
+    <div class="workflow-step active" data-import-step="upload"><span class="step-number">1</span><span>Charger</span></div>
+    <div class="workflow-step" data-import-step="reconcile"><span class="step-number">2</span><span>Réconcilier</span></div>
+    <div class="workflow-step" data-import-step="review"><span class="step-number">3</span><span>Vérifier</span></div>
+    <div class="workflow-step" data-import-step="commit"><span class="step-number">4</span><span>Synchroniser</span></div>
+  </div>
+
   <div class="import">
     <div class="dropzone" id="dropzone">
       <div><b>Déposez le fichier Excel ici</b> ou cliquez</div>
@@ -443,6 +450,11 @@ table.preview{width:100%;border-collapse:collapse;min-width:1200px;font-size:13p
   // RENDER
   // ============================================================
   function render(){
+    document.querySelectorAll('[data-import-step]').forEach(function(step){
+      step.classList.toggle('active', !currentImport
+        ? step.dataset.importStep === 'upload'
+        : step.dataset.importStep === (currentImport.savedAt ? 'commit' : 'review'));
+    });
     if(!currentImport){ $('previewWrap').style.display = 'none'; $('emptyState').style.display = 'block'; return; }
     $('previewWrap').style.display = 'block'; $('emptyState').style.display = 'none';
     $('sumDate').textContent = currentImport.date || '—';

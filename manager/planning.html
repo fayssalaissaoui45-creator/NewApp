@@ -182,6 +182,12 @@ table.plan{width:100%;border-collapse:collapse;font-size:14px;}
 
   <p class="plansub" id="planSub">Chargement…</p>
 
+  <section class="coverage-kpis" aria-label="Résumé de couverture">
+    <div class="coverage-kpi"><span>Employés planifiés aujourd'hui</span><strong id="coveragePlanned">0</strong></div>
+    <div class="coverage-kpi"><span>Déjà arrivés</span><strong id="coverageArrived">0</strong></div>
+    <div class="coverage-kpi"><span>En repos</span><strong id="coverageOff">0</strong></div>
+  </section>
+
   <section class="expected">
     <div class="expected-title">Attendus prochainement <span class="expected-count" id="expectedCount"></span></div>
     <div class="expected-list" id="expectedList"></div>
@@ -433,10 +439,35 @@ table.plan{width:100%;border-collapse:collapse;font-size:14px;}
 
   function renderAll(){
     renderPlanSub();
+    renderCoverage();
     renderExpected();
     renderDayOff();     // NEW
     renderWeek();
     updateAddRow();
+  }
+
+  function renderCoverage(){
+    const planned = $('coveragePlanned');
+    const arrived = $('coverageArrived');
+    const off = $('coverageOff');
+    if(!schedule){
+      planned.textContent = '0';
+      arrived.textContent = '0';
+      off.textContent = '0';
+      return;
+    }
+    const ti = todayIdx();
+    if(ti < 0 || ti > 6){
+      planned.textContent = '—';
+      arrived.textContent = '—';
+      off.textContent = '—';
+      return;
+    }
+    const list = Array.isArray(schedule.employees) ? schedule.employees : [];
+    const working = list.filter(function(emp){ return emp.d && emp.d[ti] && emp.d[ti].s; });
+    planned.textContent = String(working.length);
+    arrived.textContent = String(working.filter(function(emp){ return arrivedFor(emp); }).length);
+    off.textContent = String(list.length - working.length);
   }
 
   function updateAddRow(){
