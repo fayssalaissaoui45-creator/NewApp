@@ -90,6 +90,7 @@
       <img class="arch" src="../shared/200.webp" alt="McDonald's">
       <h1>Demandes</h1>
       <span class="restaurant-badge" id="restaurantBadge" style="display:none;"></span>
+      <span class="access-badge">Responsable</span>
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Tableau de bord</a>
@@ -123,6 +124,16 @@
     <div class="reqlist" id="correctionsList"></div>
     <div class="emptystate ui-state hidden" id="correctionsEmpty" role="status" aria-live="polite"></div>
   </div>
+
+  <section class="audit-panel" aria-labelledby="auditTitle">
+    <div class="audit-heading">
+      <h2 id="auditTitle">Activité récente</h2>
+      <span class="surface-meta">Journal de contrôle</span>
+    </div>
+    <div class="audit-list" id="auditList" role="status" aria-live="polite">
+      <div class="ui-state"><div><strong>Chargement de l'activité</strong>Les dernières actions apparaîtront ici.</div></div>
+    </div>
+  </section>
 
 </div>
 
@@ -166,6 +177,8 @@
   let corrections = [];
   let unsubLeave = null;
   let unsubCorrections = null;
+  let unsubAudit = null;
+  let auditEntries = [];
   let currentTab = 'leave';
   let filterLeave = 'pending';
   let filterCorrections = 'pending';
@@ -216,6 +229,51 @@
         renderCorrections();
         updateCounts();
       }, function(err){ console.error('corrections:', err); });
+
+    unsubAudit = CSM.refs.auditLog()
+      .orderBy('at', 'desc')
+      .limit(12)
+      .onSnapshot(function(snap){
+        auditEntries = snap.docs.map(function(d){ return Object.assign({ _id: d.id }, d.data()); });
+        renderAudit();
+      }, function(err){
+        console.error('auditLog:', err);
+        $('auditList').innerHTML = '<div class="ui-state"><div><strong>Journal indisponible</strong>Impossible de charger l’activité récente.</div></div>';
+      });
+  }
+
+  function renderAudit(){
+    const list = $('auditList');
+    if(!auditEntries.length){
+      list.innerHTML = '<div class="ui-state"><div><strong>Aucune activité récente</strong>Les décisions et corrections validées apparaîtront ici.</div></div>';
+      return;
+    }
+    list.innerHTML = '';
+    auditEntries.forEach(function(entry){
+      const row = document.createElement('div');
+      row.className = 'audit-item';
+      const action = document.createElement('span');
+      action.className = 'audit-action';
+      action.textContent = auditLabel(entry.action);
+      const target = document.createElement('span');
+      target.className = 'audit-target';
+      target.textContent = entry.target ? 'Cible : ' + entry.target : 'Action système';
+      const time = document.createElement('time');
+      time.className = 'audit-time';
+      time.textContent = formatRelative(entry.at);
+      row.appendChild(action);
+      row.appendChild(target);
+      row.appendChild(time);
+      list.appendChild(row);
+    });
+  }
+
+  function auditLabel(action){
+    return ({
+      'leave.approved':'Congé approuvé',
+      'leave.rejected':'Congé refusé',
+      'correction.applied':'Correction appliquée'
+    })[action] || String(action || 'Action enregistrée');
   }
 
   function updateCounts(){
