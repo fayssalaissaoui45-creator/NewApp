@@ -200,6 +200,41 @@ tbody tr.st-done{opacity:0.55;}
     </div>
   </div>
 
+  <section class="ops-kpis" aria-label="Résumé opérationnel">
+    <article class="ops-kpi">
+      <div class="ops-kpi-icon">●</div>
+      <div>
+        <span class="ops-kpi-label">Pointages du jour</span>
+        <strong class="ops-kpi-value" id="kpiTotal">0</strong>
+      </div>
+      <span class="ops-kpi-note">Total suivi</span>
+    </article>
+    <article class="ops-kpi ops-kpi-live">
+      <div class="ops-kpi-icon">↗</div>
+      <div>
+        <span class="ops-kpi-label">En poste</span>
+        <strong class="ops-kpi-value" id="kpiWorking">0</strong>
+      </div>
+      <span class="ops-kpi-note">Actifs maintenant</span>
+    </article>
+    <article class="ops-kpi ops-kpi-break">
+      <div class="ops-kpi-icon">Ⅱ</div>
+      <div>
+        <span class="ops-kpi-label">En pause</span>
+        <strong class="ops-kpi-value" id="kpiBreak">0</strong>
+      </div>
+      <span class="ops-kpi-note">Retour à surveiller</span>
+    </article>
+    <article class="ops-kpi ops-kpi-action">
+      <div class="ops-kpi-icon">!</div>
+      <div>
+        <span class="ops-kpi-label">Action requise</span>
+        <strong class="ops-kpi-value" id="kpiAction">0</strong>
+      </div>
+      <span class="ops-kpi-note">Alertes de durée</span>
+    </article>
+  </section>
+
   <div class="alertstrip" id="alertStrip"></div>
 
   <div class="filterbar">
@@ -216,6 +251,14 @@ tbody tr.st-done{opacity:0.55;}
     </div>
   </div>
 
+  <section class="work-surface">
+    <div class="surface-heading">
+      <div>
+        <span class="eyebrow">Suivi en temps réel</span>
+        <h2>Registre des pointages</h2>
+      </div>
+      <span class="surface-meta" id="tableMeta">Actualisation automatique</span>
+    </div>
   <div class="tablewrap">
     <table id="empTable">
       <thead>
@@ -239,6 +282,7 @@ tbody tr.st-done{opacity:0.55;}
       <tbody id="empBody"></tbody>
     </table>
   </div>
+  </section>
 </div>
 
 <dialog class="timedlg" id="timeDlg">
@@ -540,6 +584,13 @@ tbody tr.st-done{opacity:0.55;}
     $('countWorking').textContent = activeCount;
     $('countBreak').textContent = breakCount;
     $('countAction').textContent = actionCount;
+    $('kpiTotal').textContent = shifts.length;
+    $('kpiWorking').textContent = activeCount;
+    $('kpiBreak').textContent = breakCount;
+    $('kpiAction').textContent = actionCount;
+    $('tableMeta').textContent = currentDataDate
+      ? 'Données du ' + currentDataDate.split('-').reverse().join('/')
+      : 'Actualisation automatique';
 
     const rank = function(s){ return ({crit:0, warn:1, breakover:2, break:2, ok:3, done:4}[s] || 5); };
     
