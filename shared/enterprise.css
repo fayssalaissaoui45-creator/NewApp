@@ -535,6 +535,28 @@ tbody tr:hover{background:color-mix(in srgb, var(--accent) 5%, var(--panel)) !im
   font-size:11px;
   font-weight:800;
 }
+.ops-policy{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:12px 0 -4px;
+  color:var(--text-muted);
+  font-size:11px;
+}
+.ops-policy-label{font-weight:800;text-transform:uppercase;letter-spacing:.08em;}
+.policy-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--panel);
+  font-weight:700;
+}
+.policy-chip.warn{color:var(--status-warn-fg);background:var(--status-warn-bg);}
+.policy-chip.crit{color:var(--status-crit-fg);background:var(--status-crit-bg);}
+.policy-chip.break{color:var(--status-break-fg);background:var(--status-break-bg);}
 @media (max-width:760px){
   body:before{height:3px;}
   .app{padding:14px 12px 40px !important;}

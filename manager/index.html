@@ -193,6 +193,7 @@ tbody tr.st-done{opacity:0.55;}
         <a class="btn" href="daily-import.html">Import quotidien</a>
         <button class="btn" id="btnTheme" title="Changer le thème">🌙</button>
         <button class="btn" id="btnAdd">Ajouter</button>
+        <button class="btn" id="btnExport">Exporter CSV</button>
         <button class="btn btn-primary" id="btnPrint">Imprimer</button>
         <button class="btn btn-danger" id="btnClearDay">Vider le tableau</button>
         <button class="btn" id="btnLogout">Déconnexion</button>
@@ -249,6 +250,13 @@ tbody tr.st-done{opacity:0.55;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       <input type="text" id="searchInput" placeholder="Rechercher (Nom, Badge)...">
     </div>
+  </div>
+
+  <div class="ops-policy" aria-label="Règles opérationnelles">
+    <span class="ops-policy-label">Règles actives</span>
+    <span class="policy-chip break">Pause obligatoire 30 min</span>
+    <span class="policy-chip warn">Alerte à 4h30</span>
+    <span class="policy-chip crit">Limite à 4h50</span>
   </div>
 
   <section class="work-surface">
@@ -792,6 +800,45 @@ tbody tr.st-done{opacity:0.55;}
   });
 
   $('btnPrint').addEventListener('click', function(){ window.print(); });
+  $('btnExport').addEventListener('click', exportCsv);
+
+  function exportCsv(){
+    const header = ['Badge','Nom','Date','Entrée','Pause','Retour','Sortie','Minutes travaillées','Statut'];
+    const rows = shifts.map(function(shift){
+      const state = R.shiftState(shift, currentDataDate);
+      const ins = shift.inPunches || (shift.clockIn != null ? [shift.clockIn] : []);
+      const outs = shift.outPunches || [];
+      if(shift.breakStart != null) outs.push(shift.breakStart);
+      if(shift.clockOut != null) outs.push(shift.clockOut);
+      outs.sort(function(a,b){ return a - b; });
+      return [
+        shift.badge || '',
+        shift.name || '',
+        shift.date || currentDataDate || '',
+        ins[0] == null ? '' : R.minToHM(ins[0]),
+        outs[0] == null ? '' : R.minToHM(outs[0]),
+        ins[1] == null ? '' : R.minToHM(ins[1]),
+        outs.length >= ins.length && outs.length ? R.minToHM(outs[outs.length - 1]) : '',
+        state.workedMinutes || 0,
+        state.statusLabel || ''
+      ];
+    });
+    downloadCsv('pointages-' + (currentDataDate || R.todayKey()) + '.csv', [header].concat(rows));
+  }
+
+  function downloadCsv(filename, rows){
+    const csv = rows.map(function(row){
+      return row.map(function(value){
+        return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+      }).join(';');
+    }).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
 
   $('btnClearDay').addEventListener('click', async function(){
     if(shifts.length === 0){ alert('Le tableau est déjà vide.'); return; }

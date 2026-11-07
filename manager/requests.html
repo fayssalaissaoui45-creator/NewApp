@@ -97,6 +97,7 @@
       <a class="btn" href="planning.html">Planning</a>
       <a class="btn" href="staff.html">Employés</a>
       <a class="btn" href="daily-import.html">Import quotidien</a>
+      <button class="btn" id="btnExportRequests">Exporter CSV</button>
       <button class="btn" id="btnTheme" title="Changer le thème">🌙</button>
       <button class="btn" id="btnLogout">Déconnexion</button>
     </div>
@@ -212,6 +213,28 @@
   });
 
   $('btnLogout').addEventListener('click', function(){ auth.signOut(); });
+  $('btnExportRequests').addEventListener('click', exportRequests);
+
+  function exportRequests(){
+    const rows = [['Type','Statut','Nom','Badge','Date début','Date fin','Champ','Valeur demandée','Motif','Demandée le']];
+    leaveReqs.forEach(function(r){
+      rows.push(['Congé', r.status || '', r.name || '', r.badge || '', r.fromDate || '', r.toDate || '', '', '', r.reason || '', r.requestedAt || '']);
+    });
+    corrections.forEach(function(r){
+      rows.push(['Correction', r.status || '', r.name || '', r.badge || '', r.date || '', '', r.field || '', r.requestedValue || '', r.reason || '', r.requestedAt || '']);
+    });
+    const csv = rows.map(function(row){
+      return row.map(function(value){
+        return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+      }).join(';');
+    }).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'demandes-csm.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
 
   function startListeners(){
     unsubLeave = CSM.refs.leaveReqs()
